@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel RB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep: #0a1122;
+    --navy: #0f1b33;
+    --card-glass: rgba(255,255,255,0.045);
+    --card-border: rgba(255,255,255,0.09);
+    --cyan: #4fd1e8;
+    --text: #eaf0fb;
+    --text-dim: rgba(234,240,251,0.52);
+    --text-dimmer: rgba(234,240,251,0.32);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:
+      radial-gradient(circle at 18% -10%, rgba(79,209,232,0.13), transparent 45%),
+      radial-gradient(circle at 88% 10%, rgba(240,179,94,0.10), transparent 40%),
+      linear-gradient(180deg, var(--navy-deep), var(--navy) 45%, var(--navy-deep));
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height:100vh;
+    padding: 48px 24px 80px;
+  }
+  .wrap{ max-width: 980px; margin: 0 auto; }
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap: 20px;
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    letter-spacing: -0.02em;
+    background: linear-gradient(120deg, var(--text) 40%, var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p{ color: var(--text-dim); font-size:0.95rem; margin-top:6px; }
+  #clock{
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-align:right;
+    line-height:1.5;
+  }
+  #clock strong{ color: var(--text); font-size:1.1rem; letter-spacing:0.02em; }
+
+  /* barra de busca */
+  .search-wrap{
+    margin-bottom: 44px;
+    position: relative;
+  }
+  #search{
+    width:100%;
+    background: var(--card-glass);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 14px 44px 14px 46px;
+    font-family:'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    outline:none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  #search::placeholder{ color: var(--text-dimmer); }
+  #search:focus{
+    border-color: rgba(79,209,232,0.5);
+    box-shadow: 0 0 0 3px rgba(79,209,232,0.12);
+  }
+  .search-icon{
+    position:absolute;
+    left:16px; top:50%;
+    transform:translateY(-50%);
+    width:18px; height:18px;
+    color: var(--text-dimmer);
+    pointer-events:none;
+  }
+  .search-icon svg{ width:100%; height:100%; }
+  .search-kbd{
+    position:absolute;
+    right:14px; top:50%;
+    transform:translateY(-50%);
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 0.72rem;
+    color: var(--text-dimmer);
+    border: 1px solid var(--card-border);
+    border-radius: 5px;
+    padding: 2px 6px;
+    pointer-events:none;
+  }
+
+  section{ margin-bottom: 40px; }
+  section.hidden{ display:none; }
+  .section-head{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom: 18px;
+  }
+  .dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; box-shadow: 0 0 10px 1px currentColor; }
+  .section-head h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  .section-head .count{
+    font-size: 0.75rem;
+    color: var(--text-dimmer);
+    font-family:'Space Grotesk', sans-serif;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .card{
+    display:block;
+    background: var(--card-glass);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(10px);
+    color: var(--text);
+    text-decoration:none;
+    border-radius: 12px;
+    padding: 16px 18px;
+    position: relative;
+    overflow:hidden;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:0; left:0; right:0; height:2px;
+    background: var(--accent, var(--cyan));
+    opacity:0;
+    transition: opacity 0.18s ease;
+  }
+  .card:hover{
+    transform: translateY(-3px);
+    background: rgba(255,255,255,0.075);
+    border-color: rgba(255,255,255,0.16);
+  }
+  .card:hover::before{ opacity:1; }
+
+  .card-top{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .icon-wrap{
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: color-mix(in srgb, var(--accent, var(--cyan)) 18%, transparent);
+    overflow:hidden;
+  }
+  .icon-wrap img{
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+  }
+  .icon-fallback{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size: 0.8rem;
+    color: var(--accent, var(--cyan));
+    display:none;
+  }
+  .card .name{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size: 0.95rem;
+    line-height:1.25;
+  }
+  .card .desc{
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-left: 40px;
+  }
+  .card .url{
+    font-size: 0.7rem;
+    color: var(--text-dimmer);
+    margin-top: 10px;
+    margin-left: 40px;
+    font-family: monospace;
+  }
+
+  .empty-msg{
+    color: var(--text-dimmer);
+    font-size: 0.9rem;
+    padding: 20px 0;
+    display:none;
+  }
+  .empty-msg.show{ display:block; }
+
+  footer{
+    text-align:center;
+    color: var(--text-dimmer);
+    font-size: 0.78rem;
+    margin-top: 60px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card{ transition:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Painel RB</h1>
+        <p>Meus atalhos do dia a dia, num só lugar</p>
+      </div>
+      <div id="clock"></div>
+    </header>
+
+    <div class="search-wrap">
+      <span class="search-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </span>
+      <input type="text" id="search" placeholder="Buscar um link..." autocomplete="off">
+      <span class="search-kbd">/</span>
+    </div>
+
+    <div id="sections"></div>
+
+    <p class="empty-msg" id="empty-msg">Nenhum link encontrado para essa busca.</p>
+
+    <footer>edite as categorias e a lista de links no arquivo index.html, dentro da tag &lt;script&gt;</footer>
+  </div>
+
+<script>
+  // ======================================================
+  // 1) CATEGORIAS — adicione, remova ou reordene à vontade.
+  //    "id" é o valor usado no campo "categoria" de cada link (sem acento, minúsculo).
+  //    "cor" é qualquer cor hexadecimal — escolha o que combinar.
+  // ======================================================
+  const categorias = [
+    { id: "trabalho",       nome: "Trabalho",       cor: "#4fd1e8" }, // ciano
+    { id: "pessoal",        nome: "Pessoal",        cor: "#f0b35e" }, // dourado
+    { id: "estudo",         nome: "Estudo",         cor: "#a78bfa" }, // violeta
+    { id: "sistema",        nome: "Sistema",        cor: "#34d399" }, // verde
+    { id: "infraestrutura", nome: "Infraestrutura", cor: "#f87171" }, // coral
+    { id: "favoritos",      nome: "Favoritos",      cor: "#60a5fa" }, // azul claro
+  ];
+
+  // ======================================================
+  // 2) LINKS — o campo "categoria" precisa bater com o "id" acima.
+  //    O ícone é buscado automaticamente do site (favicon). Se não
+  //    encontrar, mostra a primeira letra do nome como alternativa.
+  // ======================================================
+  const links = [
+    // --- trabalho ---
+    { categoria: "trabalho", nome: "Gmail",                     desc: "e-mail",                          url: "https://mail.google.com" },
+    { categoria: "trabalho", nome: "Calendar",                  desc: "agenda",                          url: "https://calendar.google.com" },
+    { categoria: "trabalho", nome: "Drive",                     desc: "arquivos",                        url: "https://drive.google.com" },
+    { categoria: "trabalho", nome: "Google Admin Workspace",    desc: "gerenciador",                     url: "https://admin.google.com/" },
+    { categoria: "trabalho", nome: "Colégio Santa Úrsula",      desc: "nosso site",                      url: "http://ursula.com.br/" },
+    { categoria: "trabalho", nome: "Site Admin",                desc: "gerenciador",                     url: "https://ursula.com.br/wp-login.php" },
+    { categoria: "trabalho", nome: "Agenda Edu",                desc: "comunicação",                     url: "https://escola.agendaedu.com/" },
+    { categoria: "trabalho", nome: "Portal SAS",                desc: "acesso SAS 1º ao 5º ano",         url: "https://app.portalsaseducacao.com.br/entrar/?redirectTo=/painel/" },
+    { categoria: "trabalho", nome: "Poliedro",                  desc: "acesso do 6º ano à 3ª série",     url: "https://pmais.p4ed.com/" },
+    { categoria: "trabalho", nome: "Árvore Livros",             desc: "acesso 2º ano ao 5º ano",         url: "https://www.arvore.com.br/" },
+    { categoria: "trabalho", nome: "Portal Educa",              desc: "notas e docs",                    url: "https://portal.sejaeduca.com.br/login" },
+    { categoria: "trabalho", nome: "Trilha Edu",                desc: "acesso do 9º ano à 1ª série EM",  url: "https://trilhaedu.app/mobile/login" },
+
+    // --- pessoal ---
+    { categoria: "pessoal", nome: "WhatsApp Web", desc: "mensagens",        url: "https://web.whatsapp.com" },
+    { categoria: "pessoal", nome: "YouTube",      desc: "vídeos",           url: "https://youtube.com" },
+    { categoria: "pessoal", nome: "Banco",        desc: "internet banking", url: "https://example.com" },
+
+    // --- estudo (edite com seus links reais) ---
+    { categoria: "estudo", nome: "Portal do Aluno",   desc: "acompanhamento acadêmico", url: "https://example.com" },
+    { categoria: "estudo", nome: "Biblioteca Virtual", desc: "artigos e livros",        url: "https://example.com" },
+
+    // --- sistema (edite com seus links reais) ---
+    { categoria: "sistema", nome: "Painel Admin",  desc: "gestão do sistema", url: "https://example.com" },
+    { categoria: "sistema", nome: "Suporte / TI",  desc: "chamados",          url: "https://example.com" },
+
+    // --- infraestrutura (edite com seus links reais) ---
+    { categoria: "infraestrutura", nome: "Roteador",   desc: "configuração de rede", url: "https://example.com" },
+    { categoria: "infraestrutura", nome: "Servidor",   desc: "painel do servidor",   url: "https://example.com" },
+
+    // --- favoritos (edite com seus links reais) ---
+    { categoria: "favoritos", nome: "Meu site favorito", desc: "atalho rápido", url: "https://example.com" },
+  ];
+
+  // ======================================================
+  // Nada abaixo daqui precisa ser editado.
+  // ======================================================
+  const sectionsContainer = document.getElementById('sections');
+  const emptyMsg = document.getElementById('empty-msg');
+  const searchInput = document.getElementById('search');
+  const gridsPorCategoria = {};
+  const sectionsPorCategoria = {};
+
+  function montarSecoes(){
+    categorias.forEach(cat => {
+      const section = document.createElement('section');
+      section.id = `section-${cat.id}`;
+
+      const qtd = links.filter(l => l.categoria === cat.id).length;
+
+      const head = document.createElement('div');
+      head.className = 'section-head';
+      head.innerHTML = `
+        <span class="dot" style="background:${cat.cor}; color:${cat.cor}"></span>
+        <h2>${cat.nome}</h2>
+        <span class="count">${qtd}</span>
+      `;
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      grid.id = `grid-${cat.id}`;
+
+      section.appendChild(head);
+      section.appendChild(grid);
+      sectionsContainer.appendChild(section);
+
+      gridsPorCategoria[cat.id] = grid;
+      sectionsPorCategoria[cat.id] = section;
+    });
+  }
+
+  function corDaCategoria(id){
+    const cat = categorias.find(c => c.id === id);
+    return cat ? cat.cor : "#4fd1e8";
+  }
+
+  function makeCard(l){
+    const a = document.createElement('a');
+    a.href = l.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.className = "card";
+    a.style.setProperty('--accent', corDaCategoria(l.categoria));
+    a.dataset.nome = l.nome.toLowerCase();
+    a.dataset.desc = l.desc.toLowerCase();
+
+    let host = "";
+    try { host = new URL(l.url).hostname; } catch(e) { host = l.url; }
+    const inicial = l.nome.trim().charAt(0).toUpperCase();
+
+    a.innerHTML = `
+      <div class="card-top">
+        <span class="icon-wrap">
+          <img src="https://www.google.com/s2/favicons?sz=64&domain=${host}" alt="" loading="lazy">
+          <span class="icon-fallback">${inicial}</span>
+        </span>
+        <div class="name">${l.nome}</div>
+      </div>
+      <div class="desc">${l.desc}</div>
+      <div class="url">${host}</div>
+    `;
+
+    const img = a.querySelector('img');
+    const fallback = a.querySelector('.icon-fallback');
+    img.addEventListener('error', () => {
+      img.style.display = 'none';
+      fallback.style.display = 'block';
+    });
+
+    return a;
+  }
+
+  function render(){
+    montarSecoes();
+    links.forEach(l => {
+      const grid = gridsPorCategoria[l.categoria];
+      if (!grid) {
+        console.warn(`Categoria "${l.categoria}" não existe na lista de categorias. Verifique o link "${l.nome}".`);
+        return;
+      }
+      grid.appendChild(makeCard(l));
+    });
+  }
+  render();
+
+  function filtrar(){
+    const termo = searchInput.value.trim().toLowerCase();
+    const visivelPorCategoria = {};
+
+    categorias.forEach(cat => { visivelPorCategoria[cat.id] = false; });
+
+    document.querySelectorAll('.card').forEach(c => {
+      const match = !termo || c.dataset.nome.includes(termo) || c.dataset.desc.includes(termo);
+      c.style.display = match ? "" : "none";
+      if (match){
+        const catId = Object.keys(gridsPorCategoria).find(id => gridsPorCategoria[id] === c.parentElement);
+        if (catId) visivelPorCategoria[catId] = true;
+      }
+    });
+
+    let algumVisivel = false;
+    categorias.forEach(cat => {
+      const visivel = visivelPorCategoria[cat.id];
+      sectionsPorCategoria[cat.id].classList.toggle('hidden', !visivel);
+      if (visivel) algumVisivel = true;
+    });
+
+    emptyMsg.classList.toggle('show', !algumVisivel);
+  }
+  searchInput.addEventListener('input', filtrar);
+
+  // atalho: "/" foca a busca, "Esc" limpa
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== searchInput){
+      e.preventDefault();
+      searchInput.focus();
+    }
+    if (e.key === 'Escape' && document.activeElement === searchInput){
+      searchInput.value = '';
+      filtrar();
+      searchInput.blur();
+    }
+  });
+
+  function tick(){
+    const now = new Date();
+    const data = now.toLocaleDateString('pt-BR', { weekday:'long', day:'2-digit', month:'long' });
+    const hora = now.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+    document.getElementById('clock').innerHTML = `${data}<br><strong>${hora}</strong>`;
+  }
+  tick();
+  setInterval(tick, 1000 * 30);
+</script>
+</body>
+</html>
